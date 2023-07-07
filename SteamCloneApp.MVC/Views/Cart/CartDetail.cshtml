@@ -1,0 +1,135 @@
+﻿@model CartDetailViewModel
+@{
+    ViewData["Title"] = "CartDetail";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (!Model.Games.Any())
+{
+    <h1>Sepette heniz bir oyun bulunamadı!</h1>
+}
+else
+{
+    <h1>ALIŞVERİŞ SEPETİNİZ</h1>
+    <div id="cartList">
+        @foreach(var game in Model.Games)
+        {
+            <div class="row mb-3" data-gameId=@game.Id style="height: fit-content;" onclick="redirectToDetails('@game.Id')">
+                <div class="d-flex">
+                    <div class="w-25 p-0 m-0">
+                        <img src=@game.CoverUrl class="img-fluid rounded-start" alt="resim" style="max-height:100%;max-width:100%;">
+                    </div>
+                    <div class="w-50 p-2">
+                        <h6 class="card-title">@game.Title</h6>
+                    </div>                    
+                    <div class="float-end d-flex flex-column">
+                        <span class="text-success mb-2">@(game.Price) TL</span>
+                        <button class="badge bg-danger" style="height:30px;" onclick="removeFromCart(event)">Kaldır</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    <div class="w-75 mb-3">
+        <span>Hesaplanan tutar</span><span id="totalPrice" class="float-end">@Model.Games.DefaultIfEmpty().Sum(p=>p.Price) TL</span>
+    </div>
+
+    @if (Model.IsAuthenticated)
+    {
+        <button class="btn btn-success" onclick="purchase()">Satın Al</button>
+    }
+    else
+    {
+        <span>Satın almak için <strong><a asp-action="login" asp-controller="auth">buradan</a></strong> giriş yapınız.</span>
+    }
+}
+@section Scripts{
+    <script>
+        const redirectToDetails = (id) => {
+            window.location.href = '/game/gamedetail/' + id;
+        }
+
+        const getListItemAsString = (item) =>{
+            return `
+                                             <div class="row mb-3"  data-gameId=${item.id} style="height: fit-content;" onclick="redirectToDetails('${item.id}')">
+                        <div class="d-flex">
+                            <div class="w-25 p-0 m-0">
+                                                <img src=${item.coverUrl} class="img-fluid rounded-start" alt="resim" style="max-height:100%;max-width:100%;">
+                            </div>
+                            <div class="w-50 p-2">
+                                                <h6 class="card-title">${item.title}</h6>
+                            </div>
+                            <div class="float-end d-flex flex-column">
+                                        <span class="text-success mb-2">${item.price.toFixed(2)} TL</span>
+                                        <button class="badge bg-danger" style="height:30px;" data-gameId=${item.id} onclick="removeFromCart(event)">Kaldır</button>
+                            </div>
+                        </div>
+                   </div>            
+            `         
+        }
+        const removeFromCart = (event) => {
+            event.cancelBubble = true;
+            const gameId = event.target.dataset.gameid
+          
+            let data = {
+                GameId: gameId
+            }
+            fetch('/cart/removeFromCart', {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data)
+                    document.getElementById('cartButton').innerText = `Sepetim${data.length >= 1 ? '(' + data.length + ')' : ''}`
+                    let cartList = document.getElementById('cartList')
+                    let totalPrice = document.getElementById('totalPrice')
+                    cartList.innerHTML = ""
+                    totalPrice.innerText = ""
+                    let html = ``
+                    let total = 0
+                    for(let item of data){
+                        html+=getListItemAsString(item)
+                        total += item.price
+                    }
+                    cartList.innerHTML = html
+                    totalPrice.innerText = `${total} TL`
+                    alertify.error('Sepetten Kaldırıldı')
+                })
+        }
+        const purchase = () =>{
+            let listItems = [...document.querySelectorAll('#cartList .row')]
+            console.log(listItems)
+            if(listItems.length == 0){
+                return
+            }
+            let gameIds = listItems.map(p=>p.dataset.gameid)
+            let data = {
+                gameIds
+            }
+            console.log(data)
+            fetch('/game/PurchaseGame', {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data)
+                    document.getElementById('cartButton').innerText = `Sepetim${data.length >= 1 ? '(' + data.length + ')' : ''}`
+                    let cartList = document.getElementById('cartList')
+                    let totalPrice = document.getElementById('totalPrice')
+                    cartList.innerHTML = ""
+                    totalPrice.innerText = "0 TL"
+                    alertify.success('Satın Alındı')
+                })
+        }
+        
+    </script>
+}
+

@@ -1,0 +1,54 @@
+﻿* {
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    min-height: 100vh;
+    background-color: rgb(27, 40, 56);
+    color: #efefef
+    /*  background-image: url('/images/bgAuth.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;*/
+}
+
+#root {
+    background-image: url('https://community.cloudflare.steamstatic.com/public/shared/images/joinsteam/new_login_bg_strong_mask.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    min-height: 70vh !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+}
+
+#root .content {
+    width: 35%;
+    background-color: rgb(24, 26, 33);
+    border: 1px rgb(24, 26, 33) solid;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+#root .content input[type=text],
+#root .content input[type=text]:focus,
+#root .content input[type=password],
+#root .content input[type=password]:focus,
+#root .content input[type=email],
+#root .content input[type=email]:focus {
+    width: 100%;
+    width: 100%;
+    background-color: rgb(57, 60, 68);
+    padding: 6px;
+    border: 1px rgb(57, 60, 68) solid;
+    border-radius: 3px;
+    color:whitesmoke;
+}
+
+#links a {
+    color: #CFD2CF;
+    text-decoration: none;
+}
